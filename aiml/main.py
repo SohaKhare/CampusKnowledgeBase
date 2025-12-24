@@ -49,18 +49,20 @@ def create_app():
     @jwt_required()
     def ask_route():
         user = get_jwt_identity()
+        role = get_jwt()['role']
 
-        if user["role"]!="student":
+        if role!="student":
             return jsonify({"error": "Unauthorized"}), 403
         
         data = request.get_json()
         question = data.get("question", "")
-        semester = data.get("semester", "FY-Sem-1")  # Default to FY-Sem-1
+        course = data.get("course", "FY") # Default to FY
+        semester = data.get("semester", "Sem-1")  # Default to FY-Sem-1
 
         if not question:
             return jsonify({"error": "Question is required"}), 400
 
-        result = qa_service.ask(question, semester=semester)
+        result = qa_service.ask(question, course=course, semester=semester)
         return jsonify(result)
     
     @app.route("/auth-test", methods=["GET"])
