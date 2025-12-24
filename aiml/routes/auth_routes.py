@@ -1,6 +1,7 @@
 from flask import Blueprint, redirect, url_for, current_app
 from flask_jwt_extended import create_access_token
 from extensions import oauth
+from urllib.parse import urlencode
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -13,6 +14,7 @@ def login_google():
 
 @auth_bp.route("/auth/google/callback")
 def google_callback():
+    frontend_url = current_app.config["FRONTEND_URL"]
     token = oauth.google.authorize_access_token()
 
     user = oauth.google.get(
@@ -23,11 +25,13 @@ def google_callback():
     email_verified = user.get("email_verified")
 
     if not email or not email_verified:
-        return {"error": "Invalid Google account"}, 403
+        params = urlencode({"error":"unauthorized_email"})
+        return redirect(f"{frontend_url}/login?{params}")
 
     allowed_domain = current_app.config["STUDENT_EMAIL_DOMAIN"]
     if not email.endswith(f"@{allowed_domain}"):
-        return {"error": "Only college students allowed"}, 403
+        params = urlencode({"error":"unauthorized_email"})
+        return redirect(f"{frontend_url}/login?{params}")
 
     jwt_token = create_access_token(
         identity=email, 
@@ -36,5 +40,5 @@ def google_callback():
         }
     )
 
-    frontend_url = current_app.config["FRONTEND_URL"]
+
     return redirect(f"{frontend_url}/auth/callback?token={jwt_token}")

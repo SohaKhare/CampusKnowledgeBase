@@ -1,14 +1,19 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ChatPage() {
   const router = useRouter();
 
   useEffect(() => {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
     // Redirect to the first session or create a default one
-    router.push('/chat/1');
+    router.push("/chat/1");
   }, [router]);
 
   return (
