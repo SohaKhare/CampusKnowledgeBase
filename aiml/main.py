@@ -2,35 +2,69 @@ from flask import Flask, request, jsonify
 from google import genai
 import os
 from dotenv import load_dotenv
+
 from embedder import Embedder
 from rag import Retriever
 from askllm import QAService
 
+from config import Config
+from extensions import jwt, oauth
+from auth.google_oauth import init_google_oauth
+from routes.auth_routes import auth_bp
+
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 
 load_dotenv()
 
-app = Flask(__name__)
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)
+    app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY")
 
-# Initialize Gemini client
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+    jwt.init_app(app)
+    init_google_oauth(app, oauth)
 
-# Instantiate services
-embedder = Embedder(client)
-retriever = Retriever(embedder)
-qa_service = QAService(client, retriever)
+    app.register_blueprint(auth_bp)
+
+    # Initialize Gemini client
+    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+    # Instantiate services
+    embedder = Embedder(client) # comment next 2 lines to test auth
+    retriever = Retriever(embedder)
+    qa_service = QAService(client, retriever)
 
 
-@app.route("/ask", methods=["POST"])
-def ask_route():
-    data = request.get_json()
-    question = data.get("question", "")
+    @app.route("/ask", methods=["POST"])
+    @jwt_required()
+    def ask_route():
+        user = get_jwt_identity()
 
-    if not question:
-        return jsonify({"error": "Question is required"}), 400
+        if user["role"]!="student":
+            return jsonify({"error": "Unauthorized"}), 403
+        
+        data = request.get_json()
+        question = data.get("question", "")
 
-    result = qa_service.ask(question)
-    return jsonify(result)
+        if not question:
+            return jsonify({"error": "Question is required"}), 400
 
+        result = qa_service.ask(question)
+        return jsonify(result)
+    
+    @app.route("/auth-test", methods=["GET"])
+    @jwt_required()
+    def auth_test():
+        email = get_jwt_identity()
+        role = get_jwt()["role"]
+        return {
+            "message": "OAuth is working 🎉",
+            "email": email,
+            "role": role
+        }
+    return app
+
+app = create_app()
 
 if __name__ == "__main__":
     app.run(debug=True, port=8000)
