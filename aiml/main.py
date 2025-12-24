@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from google import genai
 import os
 from dotenv import load_dotenv
@@ -20,6 +21,15 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY")
+    
+    # Enable CORS
+    CORS(app, resources={
+        r"/*": {
+            "origins": os.getenv("FRONTEND_URL", "http://localhost:3000"),
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })
 
     jwt.init_app(app)
     init_google_oauth(app, oauth)
