@@ -120,7 +120,7 @@ export default function ChatSessionPage() {
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
       <div className="flex-1 flex overflow-hidden">
-        <div style={{ width: selectedSource ? `${chatWidth}%` : '100%' }} className="transition-all duration-300">
+        <div style={{ width: selectedSource ? `${chatWidth}%` : '100%' }}>
           <ChatWindow
             subjectName={currentSession.subject}
             messages={messages[sessionId] || []}
@@ -132,29 +132,35 @@ export default function ChatSessionPage() {
           <>
             {/* Resizable Divider */}
             <div 
-              className="w-1 bg-gray-200 hover:bg-[#1a73e8] cursor-col-resize transition-colors"
+              className="w-1 bg-gray-200 hover:bg-[#1a73e8] cursor-col-resize transition-colors flex-shrink-0"
               onMouseDown={(e) => {
                 e.preventDefault();
                 const startX = e.clientX;
                 const startWidth = chatWidth;
                 
                 const handleMouseMove = (e: MouseEvent) => {
-                  const containerWidth = window.innerWidth - (sidebarCollapsed ? 64 : 320);
-                  const delta = ((e.clientX - startX) / containerWidth) * 100;
-                  const newWidth = Math.max(30, Math.min(70, startWidth + delta));
-                  setChatWidth(newWidth);
+                  requestAnimationFrame(() => {
+                    const containerWidth = window.innerWidth - (sidebarCollapsed ? 64 : 320);
+                    const delta = ((e.clientX - startX) / containerWidth) * 100;
+                    const newWidth = Math.max(30, Math.min(70, startWidth + delta));
+                    setChatWidth(newWidth);
+                  });
                 };
                 
                 const handleMouseUp = () => {
                   document.removeEventListener('mousemove', handleMouseMove);
                   document.removeEventListener('mouseup', handleMouseUp);
+                  document.body.style.cursor = '';
+                  document.body.style.userSelect = '';
                 };
                 
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
                 document.addEventListener('mousemove', handleMouseMove);
                 document.addEventListener('mouseup', handleMouseUp);
               }}
             />
-            <div style={{ width: `${100 - chatWidth}%` }} className="transition-all duration-300">
+            <div style={{ width: `${100 - chatWidth}%` }}>
               <PDFViewerPanel 
                 source={selectedSource}
                 onClose={() => setSelectedSource(null)}
