@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import ChatSidebar from '@/components/chat/ChatSidebar';
-import ChatWindow from '@/components/chat/ChatWindow';
-import PDFViewerPanel from '@/components/chat/PDFViewerPanel';
-import { Session, Message, Source } from '@/types/chat';
-import { mockSessions } from '@/lib/mockData';
-import { useSemester } from '@/contexts/SemesterContext';
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import ChatSidebar from "@/components/chat/ChatSidebar";
+import ChatWindow from "@/components/chat/ChatWindow";
+import PDFViewerPanel from "@/components/chat/PDFViewerPanel";
+import { Session, Message, Source } from "@/types/chat";
+import { mockSessions } from "@/lib/mockData";
+import { useSemester } from "@/contexts/SemesterContext";
 
 export default function ChatSessionPage() {
   const params = useParams();
@@ -20,6 +20,7 @@ export default function ChatSessionPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
   const [chatWidth, setChatWidth] = useState(50); // Percentage
+  const [isLoading, setIsLoading] = useState(false);
 
   // Get current session
   const currentSession = sessions.find((s) => s.id === sessionId);
@@ -36,77 +37,96 @@ export default function ChatSessionPage() {
       id: (sessions.length + 1).toString(),
       subject,
       messageCount: 0,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
     setSessions([...sessions, newSession]);
     router.push(`/chat/${newSession.id}`);
   };
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string) => {
     if (!currentSession) return;
 
     const userMessage: Message = {
       id: `${Date.now()}-user`,
-      role: 'user',
+      role: "user",
       content,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
-    // TODO: Real API call would be:
-    // fetch('/api/ask', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ question: content, course, semester: semesterNumber })
-    // })
-
-    // Simulate AI response with sources
-    const aiMessage: Message = {
-      id: `${Date.now()}-ai`,
-      role: 'assistant',
-      content: `Thank you for your question about "${content.substring(0, 50)}..."\n\nThis is a mock response. In the production version, this would be powered by RAG technology using your verified campus data and syllabus.\n\nThe system would:\n1. Retrieve relevant information from the knowledge base\n2. Generate accurate, syllabus-aligned answers\n3. Provide exam-focused explanations\n\nYour actual implementation will connect to the Go backend with RAG capabilities.`,
-      timestamp: new Date(Date.now() + 1000),
-      sources: [
-        {
-          id: '1',
-          fileName: 'DSA_Module_1.pdf',
-          title: 'Data Structures - Module 1: Arrays and Linked Lists',
-          pageNumber: 27,
-          relevance: 0.95,
-          excerpt: 'An array is a collection of elements identified by index or key. Arrays store data elements based on sequential, most commonly 0 based, indexes.'
-        },
-        {
-          id: '2',
-          fileName: 'DSA_Lecture_Notes_2024.pdf',
-          title: 'DSA Complete Lecture Notes - Prof. Kumar',
-          pageNumber: 142,
-          relevance: 0.87,
-          excerpt: 'Time complexity analysis is crucial for understanding algorithm efficiency. Big O notation provides an upper bound on the growth rate of an algorithm.'
-        },
-        {
-          id: '3',
-          fileName: 'Previous_Year_Questions.pdf',
-          title: 'DSA Previous Year Question Papers (2020-2024)',
-          pageNumber: 8,
-          relevance: 0.78,
-          excerpt: 'This question appeared in the December 2023 examination. Students should focus on understanding the fundamental concepts rather than memorizing solutions.'
-        }
-      ]
-    };
-
+    // Optimistic UI update (user message immediately)
     const sessionMessages = messages[sessionId] || [];
     setMessages({
       ...messages,
-      [sessionId]: [...sessionMessages, userMessage, aiMessage]
+      [sessionId]: [...sessionMessages, userMessage],
     });
+    setIsLoading(true);
 
-    // Update message count
-    setSessions(
-      sessions.map((s) =>
-        s.id === sessionId
-          ? { ...s, messageCount: s.messageCount + 2 }
-          : s
-      )
-    );
+    try {
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch("http://localhost:8000/ask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          question: content,
+          course,
+          semester: semesterNumber.startsWith("Sem-")
+            ? semesterNumber
+            : `Sem-${semesterNumber}`,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch answer");
+      }
+
+      const data = await res.json();
+
+      const aiMessage: Message = {
+        id: `${Date.now()}-ai`,
+        role: "assistant",
+        content: data.answer,
+        timestamp: new Date(),
+        sources: (data.sources || []).map((src: any, index: number) => ({
+          id: `${sessionId}-src-${index}`,
+          fileName: src.doc_name,
+          title: src.doc_name.replace(".pdf", ""),
+          pageNumber: src.page,
+          relevance: src.relevance,
+          excerpt: src.text,
+        })),
+      };
+
+      setMessages((prev) => ({
+        ...prev,
+        [sessionId]: [...(prev[sessionId] || []), aiMessage],
+      }));
+
+      setSessions((prev) =>
+        prev.map((s) =>
+          s.id === sessionId ? { ...s, messageCount: s.messageCount + 2 } : s
+        )
+      );
+    } catch (err) {
+      console.error(err);
+
+      const errorMessage: Message = {
+        id: `${Date.now()}-error`,
+        role: "assistant",
+        content:
+          "Sorry, something went wrong while fetching the answer. Please try again.",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => ({
+        ...prev,
+        [sessionId]: [...(prev[sessionId] || []), errorMessage],
+      }));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!currentSession) {
@@ -122,55 +142,60 @@ export default function ChatSessionPage() {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <ChatSidebar 
-        sessions={sessions} 
+      <ChatSidebar
+        sessions={sessions}
         onNewSession={handleNewSession}
         isCollapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
       <div className="flex-1 flex overflow-hidden">
-        <div style={{ width: selectedSource ? `${chatWidth}%` : '100%' }}>
+        <div style={{ width: selectedSource ? `${chatWidth}%` : "100%" }}>
           <ChatWindow
             subjectName={currentSession.subject}
             messages={messages[sessionId] || []}
             onSendMessage={handleSendMessage}
             onSourceClick={setSelectedSource}
+            isLoading={isLoading}
           />
         </div>
         {selectedSource && (
           <>
             {/* Resizable Divider */}
-            <div 
+            <div
               className="w-1 bg-gray-200 hover:bg-[#1a73e8] cursor-col-resize transition-colors flex-shrink-0"
               onMouseDown={(e) => {
                 e.preventDefault();
                 const startX = e.clientX;
                 const startWidth = chatWidth;
-                
+
                 const handleMouseMove = (e: MouseEvent) => {
                   requestAnimationFrame(() => {
-                    const containerWidth = window.innerWidth - (sidebarCollapsed ? 64 : 320);
+                    const containerWidth =
+                      window.innerWidth - (sidebarCollapsed ? 64 : 320);
                     const delta = ((e.clientX - startX) / containerWidth) * 100;
-                    const newWidth = Math.max(30, Math.min(70, startWidth + delta));
+                    const newWidth = Math.max(
+                      30,
+                      Math.min(70, startWidth + delta)
+                    );
                     setChatWidth(newWidth);
                   });
                 };
-                
+
                 const handleMouseUp = () => {
-                  document.removeEventListener('mousemove', handleMouseMove);
-                  document.removeEventListener('mouseup', handleMouseUp);
-                  document.body.style.cursor = '';
-                  document.body.style.userSelect = '';
+                  document.removeEventListener("mousemove", handleMouseMove);
+                  document.removeEventListener("mouseup", handleMouseUp);
+                  document.body.style.cursor = "";
+                  document.body.style.userSelect = "";
                 };
-                
-                document.body.style.cursor = 'col-resize';
-                document.body.style.userSelect = 'none';
-                document.addEventListener('mousemove', handleMouseMove);
-                document.addEventListener('mouseup', handleMouseUp);
+
+                document.body.style.cursor = "col-resize";
+                document.body.style.userSelect = "none";
+                document.addEventListener("mousemove", handleMouseMove);
+                document.addEventListener("mouseup", handleMouseUp);
               }}
             />
             <div style={{ width: `${100 - chatWidth}%` }}>
-              <PDFViewerPanel 
+              <PDFViewerPanel
                 source={selectedSource}
                 onClose={() => setSelectedSource(null)}
               />

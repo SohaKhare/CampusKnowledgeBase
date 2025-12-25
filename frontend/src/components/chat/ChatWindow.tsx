@@ -1,26 +1,39 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { Message, Source } from '@/types/chat';
-import ChatMessage from './ChatMessage';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useSemester, COURSES, SEMESTER_NUMBERS } from '@/contexts/SemesterContext';
+import { useState, useRef, useEffect } from "react";
+import { Message, Source } from "@/types/chat";
+import ChatMessage from "./ChatMessage";
+import { useTheme } from "@/contexts/ThemeContext";
+import {
+  useSemester,
+  COURSES,
+  SEMESTER_NUMBERS,
+} from "@/contexts/SemesterContext";
+import GatheringLoader from "./GatheringLoader";
 
 interface ChatWindowProps {
   subjectName: string;
   messages: Message[];
   onSendMessage: (content: string) => void;
   onSourceClick?: (source: Source) => void;
+  isLoading: boolean;
 }
 
-export default function ChatWindow({ subjectName, messages, onSendMessage, onSourceClick }: ChatWindowProps) {
-  const [input, setInput] = useState('');
+export default function ChatWindow({
+  subjectName,
+  messages,
+  onSendMessage,
+  onSourceClick,
+  isLoading,
+}: ChatWindowProps) {
+  const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { theme, toggleTheme } = useTheme();
-  const { course, semesterNumber, setCourse, setSemesterNumber } = useSemester();
+  const { course, semesterNumber, setCourse, setSemesterNumber } =
+    useSemester();
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -31,7 +44,7 @@ export default function ChatWindow({ subjectName, messages, onSendMessage, onSou
     e.preventDefault();
     if (input.trim()) {
       onSendMessage(input.trim());
-      setInput('');
+      setInput("");
     }
   };
 
@@ -40,7 +53,9 @@ export default function ChatWindow({ subjectName, messages, onSendMessage, onSou
       {/* Header */}
       <div className="bg-[var(--bg-secondary)] border-b border-[var(--border-color)] px-6 py-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-[var(--text-primary)]">{subjectName}</h2>
+          <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+            {subjectName}
+          </h2>
           <div className="flex items-center gap-3">
             {/* Course Selector */}
             <div className="relative">
@@ -56,12 +71,22 @@ export default function ChatWindow({ subjectName, messages, onSendMessage, onSou
                 ))}
               </select>
               <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <svg className="w-4 h-4 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <svg
+                  className="w-4 h-4 text-[var(--text-secondary)]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </div>
             </div>
-            
+
             {/* Semester Number Selector */}
             <div className="relative">
               <select
@@ -76,8 +101,18 @@ export default function ChatWindow({ subjectName, messages, onSendMessage, onSou
                 ))}
               </select>
               <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <svg className="w-4 h-4 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <svg
+                  className="w-4 h-4 text-[var(--text-secondary)]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </div>
             </div>
@@ -86,13 +121,33 @@ export default function ChatWindow({ subjectName, messages, onSendMessage, onSou
               className="w-10 h-10 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] hover:bg-[var(--accent-glow)] transition-theme flex items-center justify-center"
               aria-label="Toggle theme"
             >
-              {theme === 'dark' ? (
-                <svg className="w-5 h-5 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              {theme === "dark" ? (
+                <svg
+                  className="w-5 h-5 text-[var(--accent-primary)]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                  />
                 </svg>
               ) : (
-                <svg className="w-5 h-5 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                <svg
+                  className="w-5 h-5 text-[var(--accent-primary)]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                  />
                 </svg>
               )}
             </button>
@@ -106,22 +161,41 @@ export default function ChatWindow({ subjectName, messages, onSendMessage, onSou
           {messages.length === 0 ? (
             <div className="text-center py-12">
               <div className="w-16 h-16 bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                <svg
+                  className="w-8 h-8 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                  />
                 </svg>
               </div>
               <h3 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
                 Hi! I&apos;m your AI study assistant
               </h3>
               <p className="text-[var(--text-secondary)] max-w-md mx-auto">
-                Ask me anything about <span className="font-semibold text-[var(--accent-primary)]">{subjectName}</span> from your KJ Somaiya syllabus!
+                Ask me anything about{" "}
+                <span className="font-semibold text-[var(--accent-primary)]">
+                  {subjectName}
+                </span>{" "}
+                from your KJ Somaiya syllabus!
               </p>
             </div>
           ) : (
             messages.map((message) => (
-              <ChatMessage key={message.id} message={message} onSourceClick={onSourceClick} />
+              <ChatMessage
+                key={message.id}
+                message={message}
+                onSourceClick={onSourceClick}
+              />
             ))
           )}
+          {isLoading && <GatheringLoader />}
           <div ref={messagesEndRef} />
         </div>
       </div>
@@ -134,7 +208,12 @@ export default function ChatWindow({ subjectName, messages, onSendMessage, onSou
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask anything about your subject..."
+              placeholder={
+                isLoading
+                  ? "Gathering information..."
+                  : "Ask anything about your subject..."
+              }
+              disabled={isLoading}
               className="flex-1 px-4 py-3 bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-theme placeholder:text-[var(--text-secondary)]"
             />
             <button
@@ -142,8 +221,18 @@ export default function ChatWindow({ subjectName, messages, onSendMessage, onSou
               disabled={!input.trim()}
               className="px-6 py-3 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white rounded-xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                />
               </svg>
             </button>
           </form>

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from '@/contexts/ThemeContext';
-import { SemesterProvider } from '@/contexts/SemesterContext';
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { SemesterProvider } from "@/contexts/SemesterContext";
+import "katex/dist/katex.min.css";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,4 +30,3 @@ export default function RootLayout({
     </html>
   );
 }
-
