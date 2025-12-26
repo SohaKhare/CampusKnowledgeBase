@@ -23,34 +23,20 @@ class QAService:
             # ),
             tools=tools,
             system_instruction=[
-                types.Part.from_text(text="""academic test"""),
+                types.Part.from_text(text="""You are a helpful campus teaching assistant."""),
             ],
         )
-        # self.initial_history = [
-        #     Content(
-        #         role="system",
-        #         parts=[Part(text="You are an academic research assistant. Use context evidence and cite sources respectfully.")]
-        #     ),
-        #     Content(
-        #         role="user",
-        #         parts=[Part(text="Hello, I’d like you to help me with research tasks.")]
-        #     ),
-        #     Content(
-        #         role="system",
-        #         parts=[Part(text="Please be thorough, cite any sources, and explain uncertainty when unclear.")]
-        #     ),
-        #     Content(
-        #         role="user",
-        #         parts=[Part(text="Let’s get started.")]
-        #     ),
-        # ]
         
-        self.history_content = [
-            Content(parts=[Part(text="""explain in detail drift velocity""")], role='user'),
-            Content(parts=[Part(text="""YAHOOOOO"""),], role='model')
-        ]
+        # self.history_content = [
+        #     UserContent(parts=[Part(text="""explain in detail drift velocity""")]),
+        #     Content(parts=[Part(text="""YAHOOOOO"""),], role='model'),
+        #     UserContent(parts=[Part(text="""voltage explain""")]),
+        #     Content(parts=[Part(text="""YAHOOOOO!!!!"""),], role='model'),
+        #     UserContent(parts=[Part(text="""meow""")]),
+        #     Content(parts=[Part(text="""YAHOOOOO!"""),], role='model'),
+        # ]
 
-        self.chat = self.client.chats.create(model=self.model_name, config=generate_content_config, history=self.history_content)
+        self.chat = self.client.chats.create(model=self.model_name, config=generate_content_config)#, history=self.history_content)
         
     
     def ask(self, question: str, course:str = None, semester: str = None) -> Dict:
@@ -58,9 +44,31 @@ class QAService:
 
         context = "\n\n".join(f"- {c['text']}" for c in retrieved_chunks)
 
-        prompt = f"""You are a campus assistant.
-Answer using the context below if present.
-If the context is insufficient, say you don't know.
+        prompt = f"""
+You are a helpful campus teaching assistant.
+
+IMPORTANT RULES:
+- Prefer answering using the information present in the context below.
+- If the context does not contain enough information to answer, use google search tool to find the answer.
+- If you still cannot find the answer, respond with:
+  "I don't have enough information in the provided notes to answer this."
+
+ANSWERING GUIDE:
+1. Don't shorten the answer, keep it long and easy to understand for learner prupose.
+2. Structure the answer with clear sections and headings (use KaTeX and Markdown).
+3. Include examples, use bullet points, and step-by-step explanations where applicable.
+4. Google search for extra information if context is insufficient.
+5. Give the ORIGINAL context definition or statement in simple as well (do not oversimplify).
+6. Use a SIMPLE ANALOGY or real-life comparison to make the idea intuitive.
+7. If applicable, mention WHY this concept is important for exams or applications.
+8. Keep the explanation clear, structured, and student-friendly.
+   (do NOT give a single short summary paragraph unless asked).
+
+TONE:
+- Clear
+- Student-friendly
+- Exam-oriented
+- No unnecessary jargon unless explained
 
 Context:
 ---
@@ -84,9 +92,12 @@ Question:
             formatted_sources.append({
                 "id": str(idx + 1),
                 "fileName": chunk.get("doc_name", "Unknown"),
-                "title": chunk.get("subject", "Document"),
-                "pageNumber": chunk.get("page"),
-                "relevance": 0.85,  # You can calculate this based on similarity score
+                "category": chunk.get("category", "Unknown"),
+                "semester": chunk.get("semester", "Unknown"),
+                "source": chunk.get("source", "Unknown"),
+                "title": chunk.get("subject", "No Title"),
+                "pageNumber": chunk.get("page", 0),
+                "relevance": chunk.get("relevance", 0),  # You can calculate this based on similarity score
                 "excerpt": chunk.get("text", "")[:200] + "..." if len(chunk.get("text", "")) > 200 else chunk.get("text", ""),
                 "filePath": chunk.get("source_path", "")
             })

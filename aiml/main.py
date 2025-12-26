@@ -40,7 +40,6 @@ def create_app():
 
     # Initialize Gemini client
     client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-    print(type(client))
 
     # Instantiate services
     embedder = Embedder(client) # comment next 2 lines to test auth

@@ -17,10 +17,10 @@ ENV_PATH = SCRIPT_DIR.parent / ".env"  # one folder above: aiml/.env
 OUTPUT_DIR = SCRIPT_DIR / "output"
 
 DEFAULT_INPUT_JSONL = OUTPUT_DIR / "chunks.jsonl"
-DEFAULT_INDEX_PATH = OUTPUT_DIR / "faiss.index"
+DEFAULT_INDEX_PATH = OUTPUT_DIR / "FY_Sem-1_faiss.index"
 
 # Throttle embedding calls to avoid rate limits
-EMBED_REQUESTS_PER_SECOND = 1.0
+EMBED_REQUESTS_PER_SECOND = 1.4
 MIN_SECONDS_BETWEEN_EMBEDS = 1.0 / EMBED_REQUESTS_PER_SECOND
 
 # Retry handling for quota/rate limits
@@ -32,7 +32,7 @@ PRINT_EVERY_N = 1
 
 # For quick testing: ingest only first N chunks.
 # Set INGEST_LIMIT=0 to ingest everything.
-DEFAULT_INGEST_LIMIT = 50
+DEFAULT_INGEST_LIMIT = 0
 
 
 def iter_jsonl(path: Path) -> Iterable[Dict]:
