@@ -1,8 +1,9 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from google import genai
 from google.api_core.exceptions import ResourceExhausted
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
 from embedder import Embedder
@@ -65,6 +66,34 @@ def create_app():
 
         result = qa_service.ask(question, course=course, semester=semester)
         return jsonify(result)
+    
+    @app.route("/pdf/<path:filename>", methods=["GET"])
+    @jwt_required()
+    def serve_pdf(filename):
+        """Serve PDF files from the data directory"""
+        try:
+            # Security: Only allow serving PDFs from data directory
+            data_dir = Path("../data").resolve()
+            
+            # Search for the file in data directory recursively
+            pdf_path = None
+            for file in data_dir.rglob(filename):
+                if file.is_file() and file.suffix.lower() == '.pdf':
+                    pdf_path = file
+                    break
+            
+            if pdf_path and pdf_path.exists():
+                return send_file(
+                    pdf_path,
+                    mimetype='application/pdf',
+                    as_attachment=False,
+                    download_name=filename
+                )
+            else:
+                return jsonify({"error": "PDF not found"}), 404
+                
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
     
     @app.route("/auth-test", methods=["GET"])
     @jwt_required()

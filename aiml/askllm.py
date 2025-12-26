@@ -78,7 +78,20 @@ Question:
         answer_text = response.text
         print(self.chat.get_history())
 
+        # Format sources for frontend
+        formatted_sources = []
+        for idx, chunk in enumerate(retrieved_chunks):
+            formatted_sources.append({
+                "id": str(idx + 1),
+                "fileName": chunk.get("doc_name", "Unknown"),
+                "title": chunk.get("subject", "Document"),
+                "pageNumber": chunk.get("page"),
+                "relevance": 0.85,  # You can calculate this based on similarity score
+                "excerpt": chunk.get("text", "")[:200] + "..." if len(chunk.get("text", "")) > 200 else chunk.get("text", ""),
+                "filePath": chunk.get("source_path", "")
+            })
+
         return {
             "answer": answer_text, 
-            "sources": retrieved_chunks,
+            "sources": formatted_sources,
         }

@@ -49,20 +49,20 @@ export default function ChatWindow({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-screen bg-[var(--bg-primary)] transition-theme">
+    <div className="flex flex-col h-full bg-[var(--bg-primary)] transition-theme overflow-hidden">
       {/* Header */}
-      <div className="bg-[var(--bg-secondary)] border-b border-[var(--border-color)] px-6 py-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+      <div className="flex-shrink-0 bg-[var(--bg-secondary)] border-b border-[var(--border-color)] px-4 sm:px-6 py-3 sm:py-4">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <h2 className="text-lg sm:text-xl font-semibold text-[var(--text-primary)] truncate flex-shrink min-w-0">
             {subjectName}
           </h2>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-shrink-0">
             {/* Course Selector */}
-            <div className="relative">
+            <div className="relative flex-shrink-0">
               <select
                 value={course}
                 onChange={(e) => setCourse(e.target.value)}
-                className="appearance-none px-4 py-2 pr-10 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm font-medium hover:bg-[var(--accent-glow)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] transition-theme cursor-pointer"
+                className="appearance-none px-3 py-1.5 pr-8 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] text-xs sm:text-sm font-medium hover:bg-[var(--accent-glow)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] transition-theme cursor-pointer max-w-[140px]"
               >
                 {COURSES.map((c) => (
                   <option key={c.value} value={c.value}>
@@ -88,11 +88,11 @@ export default function ChatWindow({
             </div>
 
             {/* Semester Number Selector */}
-            <div className="relative">
+            <div className="relative flex-shrink-0">
               <select
                 value={semesterNumber}
                 onChange={(e) => setSemesterNumber(e.target.value)}
-                className="appearance-none px-4 py-2 pr-10 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm font-medium hover:bg-[var(--accent-glow)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] transition-theme cursor-pointer"
+                className="appearance-none px-3 py-1.5 pr-8 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] text-xs sm:text-sm font-medium hover:bg-[var(--accent-glow)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] transition-theme cursor-pointer max-w-[120px]"
               >
                 {SEMESTER_NUMBERS.map((sem) => (
                   <option key={sem.value} value={sem.value}>
@@ -118,7 +118,7 @@ export default function ChatWindow({
             </div>
             <button
               onClick={toggleTheme}
-              className="w-10 h-10 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] hover:bg-[var(--accent-glow)] transition-theme flex items-center justify-center"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] hover:bg-[var(--accent-glow)] transition-theme flex items-center justify-center flex-shrink-0"
               aria-label="Toggle theme"
             >
               {theme === "dark" ? (

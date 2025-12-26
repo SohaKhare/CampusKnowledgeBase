@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 
 type SemesterContextType = {
   course: string;
@@ -37,16 +37,18 @@ export const SEMESTER_NUMBERS = [
 ];
 
 export function SemesterProvider({ children }: { children: React.ReactNode }) {
-  const [course, setCourseState] = useState<string>("FY");
-  const [semesterNumber, setSemesterNumberState] = useState<string>("1");
-
-  useEffect(() => {
-    // Load from localStorage on mount
-    const savedCourse = localStorage.getItem("selectedCourse");
-    const savedSemester = localStorage.getItem("selectedSemesterNumber");
-    if (savedCourse) setCourseState(savedCourse);
-    if (savedSemester) setSemesterNumberState(savedSemester);
-  }, []);
+  const [course, setCourseState] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem("selectedCourse") || "FY";
+    }
+    return "FY";
+  });
+  const [semesterNumber, setSemesterNumberState] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem("selectedSemesterNumber") || "1";
+    }
+    return "1";
+  });
 
   const setCourse = (newCourse: string) => {
     setCourseState(newCourse);

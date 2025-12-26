@@ -12,6 +12,7 @@ export interface Source {
   pageNumber?: number;
   relevance: number; // 0-1 score
   excerpt?: string;
+  filePath?: string; // Backend file path for PDF access
 }
 
 export interface Message {

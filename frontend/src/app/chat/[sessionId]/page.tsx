@@ -2,12 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import ChatSidebar from "@/components/chat/ChatSidebar";
 import ChatWindow from "@/components/chat/ChatWindow";
-import PDFViewerPanel from "@/components/chat/PDFViewerPanel";
 import { Session, Message, Source } from "@/types/chat";
 import { mockSessions } from "@/lib/mockData";
 import { useSemester } from "@/contexts/SemesterContext";
+
+// Load PDFViewerPanel only on client-side to avoid SSR issues with DOMMatrix
+const PDFViewerPanel = dynamic(
+  () => import("@/components/chat/PDFViewerPanel"),
+  { ssr: false }
+);
 
 export default function ChatSessionPage() {
   const params = useParams();
@@ -91,11 +97,12 @@ export default function ChatSessionPage() {
         timestamp: new Date(),
         sources: (data.sources || []).map((src: any, index: number) => ({
           id: `${sessionId}-src-${index}`,
-          fileName: src.doc_name,
-          title: src.doc_name.replace(".pdf", ""),
-          pageNumber: src.page,
-          relevance: src.relevance,
-          excerpt: src.text,
+          fileName: src.fileName || src.doc_name || "Unknown",
+          title: (src.title || src.fileName || src.doc_name || "Document").replace(".pdf", ""),
+          pageNumber: src.pageNumber || src.page,
+          relevance: src.relevance || 0.85,
+          excerpt: src.excerpt || src.text || "",
+          filePath: src.filePath || src.source_path || ""
         })),
       };
 
@@ -141,15 +148,18 @@ export default function ChatSessionPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen w-screen overflow-hidden fixed inset-0">
       <ChatSidebar
         sessions={sessions}
         onNewSession={handleNewSession}
         isCollapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
-      <div className="flex-1 flex overflow-hidden">
-        <div style={{ width: selectedSource ? `${chatWidth}%` : "100%" }}>
+      <div className="flex-1 flex overflow-hidden min-w-0">
+        <div 
+          className="flex flex-col overflow-hidden"
+          style={{ width: selectedSource ? `${chatWidth}%` : "100%" }}
+        >
           <ChatWindow
             subjectName={currentSession.subject}
             messages={messages[sessionId] || []}
@@ -162,7 +172,7 @@ export default function ChatSessionPage() {
           <>
             {/* Resizable Divider */}
             <div
-              className="w-1 bg-gray-200 hover:bg-[#1a73e8] cursor-col-resize transition-colors flex-shrink-0"
+              className="w-1 bg-[var(--border-color)] hover:bg-[var(--accent-primary)] cursor-col-resize transition-colors flex-shrink-0"
               onMouseDown={(e) => {
                 e.preventDefault();
                 const startX = e.clientX;
@@ -194,7 +204,10 @@ export default function ChatSessionPage() {
                 document.addEventListener("mouseup", handleMouseUp);
               }}
             />
-            <div style={{ width: `${100 - chatWidth}%` }}>
+            <div 
+              className="flex flex-col overflow-hidden"
+              style={{ width: `${100 - chatWidth}%` }}
+            >
               <PDFViewerPanel
                 source={selectedSource}
                 onClose={() => setSelectedSource(null)}
