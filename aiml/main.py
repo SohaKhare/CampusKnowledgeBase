@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, send_file
+from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_cors import CORS
 from google import genai
 from google.api_core.exceptions import ResourceExhausted
@@ -23,13 +24,17 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY")
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+    app.config.update(
+        SESSION_COOKIE_SECURE=True,
+        SESSION_COOKIE_SAMESITE="Lax",
+        SESSION_TYPE="filesystem"
+    )
     
     # Enable CORS
-    CORS(app, resources={
+    CORS(app, supports_credentials=True, resources={
         r"/*": {
             "origins": os.getenv("FRONTEND_URL", "http://localhost:3000"),
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization"]
         }
     })
 
