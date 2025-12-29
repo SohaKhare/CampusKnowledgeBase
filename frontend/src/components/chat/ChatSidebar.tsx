@@ -28,7 +28,20 @@ export default function ChatSidebar({ sessions, onNewSession, isCollapsed, onTog
 
   return (
     <>
-      <div className={`bg-[var(--bg-secondary)] border-r border-[var(--border-color)] flex flex-col h-screen transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-80'}`}>
+      {/* Mobile Overlay */}
+      {!isCollapsed && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity"
+          onClick={onToggleCollapse}
+        />
+      )}
+      
+      {/* Sidebar */}
+      <div className={`bg-[var(--bg-secondary)] border-r border-[var(--border-color)] flex flex-col h-screen transition-all duration-300 z-50 ${
+        isCollapsed 
+          ? 'w-16' 
+          : 'w-80 lg:w-80 fixed lg:relative left-0 top-0'
+      }`}>
         {/* Header */}
         <div className="p-4 border-b border-[var(--border-color)]">
           {!isCollapsed ? (

@@ -9,9 +9,6 @@ import { Session, Message, Source } from "@/types/chat";
 import { mockSessions } from "@/lib/mockData";
 import { useSemester } from "@/contexts/SemesterContext";
 
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-
 // Load PDFViewerPanel only on client-side to avoid SSR issues with DOMMatrix
 const PDFViewerPanel = dynamic(
   () => import("@/components/chat/PDFViewerPanel"),
@@ -26,7 +23,20 @@ export default function ChatSessionPage() {
 
   const [sessions, setSessions] = useState<Session[]>(mockSessions);
   const [messages, setMessages] = useState<{ [key: string]: Message[] }>({});
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true); // Start collapsed on mobile
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      setSidebarCollapsed(mobile);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
   const [chatWidth, setChatWidth] = useState(50); // Percentage
   const [isLoading, setIsLoading] = useState(false);
@@ -85,7 +95,7 @@ export default function ChatSessionPage() {
 
     try {
       const token = localStorage.getItem("auth_token");
-      const res = await fetch(`${BACKEND_URL}/ask`, {
+      const res = await fetch("http://localhost:8000/ask", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -179,7 +189,7 @@ export default function ChatSessionPage() {
       <div className="flex-1 flex overflow-hidden min-w-0">
         <div
           className="flex flex-col overflow-hidden"
-          style={{ width: selectedSource ? `${chatWidth}%` : "100%" }}
+          style={{ width: selectedSource && !isMobile ? `${chatWidth}%` : "100%" }}
         >
           <ChatWindow
             subjectName={currentSession.subject}
@@ -191,9 +201,9 @@ export default function ChatSessionPage() {
         </div>
         {selectedSource && (
           <>
-            {/* Resizable Divider */}
+            {/* Resizable Divider - Desktop only */}
             <div
-              className="w-1 bg-[var(--border-color)] hover:bg-[var(--accent-primary)] cursor-col-resize transition-colors flex-shrink-0"
+              className="hidden lg:block w-1 bg-[var(--border-color)] hover:bg-[var(--accent-primary)] cursor-col-resize transition-colors flex-shrink-0"
               onMouseDown={(e) => {
                 e.preventDefault();
                 const startX = e.clientX;
@@ -225,9 +235,14 @@ export default function ChatSessionPage() {
                 document.addEventListener("mouseup", handleMouseUp);
               }}
             />
+            {/* PDF Viewer - Overlay on mobile, split view on desktop */}
             <div
-              className="flex flex-col overflow-hidden"
-              style={{ width: `${100 - chatWidth}%` }}
+              className={`flex flex-col overflow-hidden ${
+                isMobile 
+                  ? 'fixed inset-0 z-50 bg-[var(--bg-primary)]' 
+                  : ''
+              }`}
+              style={!isMobile ? { width: `${100 - chatWidth}%` } : {}}
             >
               <PDFViewerPanel
                 source={selectedSource}

@@ -11,6 +11,7 @@ export default function Navbar() {
   const isLandingPage = pathname === "/";
   const { theme, toggleTheme } = useTheme();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -134,12 +135,31 @@ export default function Navbar() {
             </div>
           )}
 
+          {/* Mobile Menu Button */}
+          {isLandingPage && (
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 text-[var(--text-primary)] hover:bg-[var(--accent-glow)] rounded-lg transition-colors"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
+          )}
+
           {/* Theme Toggle & CTA */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={toggleTheme}
               className={`rounded-xl bg-[var(--bg-tertiary)] hover:bg-[var(--accent-glow)] transition-all duration-300 group ${
-                isScrolled ? "p-1.5" : "p-2.5"
+                isScrolled ? "p-1.5" : "p-2 sm:p-2.5"
               }`}
               title={
                 theme === "light"
@@ -184,32 +204,89 @@ export default function Navbar() {
             </button>
 
             {isLoggedIn ? (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <Button
                   size={isScrolled ? "sm" : "md"}
                   onClick={() => router.push("/chat")}
+                  className="hidden sm:flex"
                 >
                   Chat
                 </Button>
+                <button
+                  onClick={() => router.push("/chat")}
+                  className="sm:hidden p-2 text-[var(--accent-primary)] hover:bg-[var(--accent-glow)] rounded-lg transition-colors"
+                  aria-label="Chat"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                </button>
 
                 <button
                   onClick={handleLogout}
                   className={`rounded-xl border border-red-400 text-red-400 hover:bg-red-400/10 transition-all ${
-                    isScrolled ? "px-3 py-1.5 text-sm" : "px-4 py-2 text-sm"
+                    isScrolled ? "px-2 sm:px-3 py-1.5 text-xs sm:text-sm" : "px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm"
                   }`}
                 >
-                  Logout
+                  <span className="hidden sm:inline">Logout</span>
+                  <svg className="sm:hidden w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
                 </button>
               </div>
             ) : (
               <Link href="/login">
                 <Button size={isScrolled ? "sm" : "md"}>
-                  {isScrolled ? "Login" : "Get Started"}
+                  <span className="hidden sm:inline">{isScrolled ? "Login" : "Get Started"}</span>
+                  <span className="sm:hidden">Login</span>
                 </Button>
               </Link>
             )}
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {isLandingPage && mobileMenuOpen && (
+          <div className="md:hidden py-4 border-t border-[var(--border-color)] bg-[var(--bg-secondary)]">
+            <div className="flex flex-col space-y-3 px-2">
+              <a
+                href="#features"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-glow)] rounded-lg transition-all font-medium"
+              >
+                Features
+              </a>
+              <a
+                href="#how-it-works"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-glow)] rounded-lg transition-all font-medium"
+              >
+                How It Works
+              </a>
+              <a
+                href="#testimonials"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-glow)] rounded-lg transition-all font-medium"
+              >
+                Testimonials
+              </a>
+              <a
+                href="#faq"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-glow)] rounded-lg transition-all font-medium"
+              >
+                FAQ
+              </a>
+              <a
+                href="#contact"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-glow)] rounded-lg transition-all font-medium"
+              >
+                Contact
+              </a>
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );
