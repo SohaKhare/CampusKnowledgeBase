@@ -73,7 +73,7 @@ class Retriever:
 
     def _load_resources(self, course: Optional[str], semester: Optional[str]):
         if course and semester:
-            data_dir = _repo_root() / "data"
+            data_dir = _repo_root() / "aiml" / "data"
             index_path, chunks_path = _candidate_paths(data_dir, course, semester)
             cache_key = ("data", str(index_path), str(chunks_path))
         else:
