@@ -29,9 +29,10 @@ def _distance_to_relevance(distance: float) -> float:
     return 1.0 / (1.0 + float(distance))
 
 
-def _repo_root() -> Path:
+def _curr_file_parent() -> Path:
     # aiml/rag.py -> aiml/ -> repo root
-    return Path(__file__).resolve().parent.parent
+    print(Path(__file__).resolve().parent)
+    return Path(__file__).resolve().parent
 
 
 def _candidate_paths(data_dir: Path, course: str, semester: str) -> Tuple[Path, Path]:
@@ -73,12 +74,12 @@ class Retriever:
 
     def _load_resources(self, course: Optional[str], semester: Optional[str]):
         if course and semester:
-            data_dir = _repo_root() / "aiml" / "data"
+            data_dir = _curr_file_parent() / "data"
             index_path, chunks_path = _candidate_paths(data_dir, course, semester)
             cache_key = ("data", str(index_path), str(chunks_path))
         else:
-            index_path = _repo_root() / "aiml" / self.default_index_path
-            chunks_path = _repo_root() / "aiml" / self.default_chunks_path
+            index_path = _curr_file_parent() / self.default_index_path
+            chunks_path = _curr_file_parent() / self.default_chunks_path
             cache_key = ("fallback", str(index_path), str(chunks_path))
 
         if cache_key in self._cache:
