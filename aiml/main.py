@@ -86,7 +86,7 @@ def create_app():
         """Serve PDF files from the data directory"""
         try:
             # Security: Only allow serving PDFs from data directory
-            data_dir = Path("../data").resolve()
+            data_dir = Path("./data").resolve()
             
             # Search for the file in data directory recursively
             pdf_path = None
