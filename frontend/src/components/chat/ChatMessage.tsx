@@ -75,12 +75,6 @@ export default function ChatMessage({
                 ol: ({ children }) => <ol className="list-decimal list-inside mb-4 space-y-1">{children}</ol>,
                 li: ({ children }) => <li className="ml-4">{children}</li>,
                 blockquote: ({ children }) => <blockquote className="border-l-4 border-[var(--accent-primary)] pl-4 italic my-4">{children}</blockquote>,
-                code: ({ inline, children }) => 
-                  inline ? (
-                    <code className="bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded text-sm font-mono">{children}</code>
-                  ) : (
-                    <code className="block bg-[var(--bg-tertiary)] p-3 rounded-lg text-sm font-mono overflow-x-auto my-3">{children}</code>
-                  ),
                 pre: ({ children }) => <pre className="bg-[var(--bg-tertiary)] p-3 rounded-lg overflow-x-auto my-3">{children}</pre>,
               }}
             >

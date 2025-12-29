@@ -9,7 +9,7 @@ from pptx import Presentation
 # ================= CONFIG =================
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-DATA_DIR = (SCRIPT_DIR / "../../data").resolve()
+DATA_DIR = (SCRIPT_DIR / "../data").resolve()
 OUTPUT_DIR = SCRIPT_DIR / "output"
 
 CHUNK_SIZE = 500
