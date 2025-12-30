@@ -32,13 +32,14 @@ export default function ChatWindow({
   const { course, semesterNumber, setCourse, setSemesterNumber } =
     useSemester();
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (messages.length === 0) return;
+
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+  }, [messages.length]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +50,7 @@ export default function ChatWindow({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[var(--bg-primary)] transition-theme overflow-hidden">
+    <div className="flex flex-col h-full bg-[var(--bg-primary)] transition-theme">
       {/* Header */}
       <div className="flex-shrink-0 bg-[var(--bg-secondary)] border-b border-[var(--border-color)] px-4 sm:px-6 py-3 sm:py-4">
         <div className="flex items-center justify-between gap-2 flex-wrap">
