@@ -19,7 +19,6 @@ Students face massive information overload during exam prep, with hundreds of pa
 * **Speed:** Manually searching through 100+ page PDFs for a single concept is inefficient.
 * **Accuracy:** Academic queries require precise grounding in verified institutional data.
 
-**CampusKnowledgeBase** provides an official "Source of Truth" by grounding Gemini AI in your university's specific curriculum.
 ---
 
 ## ✨ Key Features
@@ -47,16 +46,6 @@ Students face massive information overload during exam prep, with hundreds of pa
 ---
 
 ## 🚀 Getting Started
-
-### Prerequisites
-
-Ensure you have the following installed:
-
-- **Python**: 3.9 or higher
-- **Node.js**: 16+ (for frontend)
-- **pip**: Python package manager
-- **npm/yarn**: Node package manager
-- **Git**: Version control
 
 ### Environment Setup
 
