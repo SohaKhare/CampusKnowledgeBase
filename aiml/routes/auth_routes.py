@@ -29,7 +29,7 @@ def google_callback():
         return redirect(f"{frontend_url}/login?{params}")
 
     allowed_domain = current_app.config["STUDENT_EMAIL_DOMAIN"]
-    if not email.endswith(f"@{allowed_domain}"):
+    if allowed_domain!="all" and not email.endswith(f"@{allowed_domain}"):
         params = urlencode({"error":"unauthorized_email"})
         return redirect(f"{frontend_url}/login?{params}")
 

@@ -44,12 +44,12 @@ export default function LoginClient() {
                 height={16}
               />
             </span>
-            <span>Sign in with Somaiya Email</span>
+            <span>Sign in with your Account</span>
           </button>
 
           <p className="text-xs text-[#6c7086] text-center">
             Only <span className="font-medium">@somaiya.edu</span> accounts are
-            allowed
+            allowed but for time being given access to all
           </p>
         </div>
       </div>
