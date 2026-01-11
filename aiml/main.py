@@ -25,6 +25,7 @@ def create_app():
     app.config.from_object(Config)
     app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY")
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+    app.logger.setLevel(os.getenv("FLASK_LOG_LEVEL", "INFO").upper())
     app.config.update(
         SESSION_COOKIE_SECURE=True,
         SESSION_COOKIE_SAMESITE="Lax",
@@ -52,6 +53,31 @@ def create_app():
 
     app.register_blueprint(auth_bp)
 
+    # Helpful in hosted envs: confirm the auth endpoints are actually registered.
+    try:
+        auth_rules = []
+        for rule in app.url_map.iter_rules():
+            if "google" in rule.rule or rule.rule.startswith("/login") or rule.rule.startswith("/auth"):
+                methods = sorted(m for m in rule.methods if m not in {"HEAD", "OPTIONS"})
+                auth_rules.append(f"{rule.rule} -> {rule.endpoint} methods={methods}")
+        app.logger.info("[startup] registered auth-ish routes: %s", auth_rules)
+    except Exception:
+        app.logger.exception("[startup] failed to enumerate routes")
+
+    @app.after_request
+    def _log_404s(response):
+        if response.status_code == 404:
+            app.logger.warning(
+                "[404] method=%s path=%s host=%s xfp=%s xfh=%s xprefix=%s",
+                request.method,
+                request.path,
+                request.headers.get("Host"),
+                request.headers.get("X-Forwarded-Proto"),
+                request.headers.get("X-Forwarded-Host"),
+                request.headers.get("X-Forwarded-Prefix"),
+            )
+        return response
+
     # Initialize Gemini client
     client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
@@ -59,6 +85,18 @@ def create_app():
     embedder = Embedder(client) # comment next 2 lines to test auth
     retriever = Retriever(embedder)
     qa_service = QAService(client, retriever)
+
+
+    @app.route("/health", methods=["GET"])
+    def health():
+        """Unauthenticated health check for deployments/load balancers."""
+        return jsonify(
+            {
+                "status": "ok",
+                "service": "aiml",
+                "path": request.path,
+            }
+        ), 200
 
 
     @app.route("/ask", methods=["POST"])

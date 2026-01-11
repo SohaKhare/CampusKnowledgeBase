@@ -84,7 +84,7 @@ Question:
             message=prompt
         )
         answer_text = response.text
-        print(self.chat.get_history())
+        # print(self.chat.get_history())
 
         # Format sources for frontend
         formatted_sources = []
